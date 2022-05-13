@@ -1,18 +1,12 @@
-# Welcome to your CDK Java project!
+# AWS CDK Examples (in Java)
 
-This is a blank project for CDK development with Java.
+Folders
+- `cdk` - Several example stacks and constructs
+  - `stack-yaml-versions` - Contains the generated yaml from the CDK stacks so you can see what CDK is doing under the hood (it's a lot!)
+- `server` - Springboot server + Docker for Fargate example
+- `snslambda` - A Java lambda
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-It is a [Maven](https://maven.apache.org/) based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
-
-## Useful commands
-
- * `mvn package`     compile and run tests
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+Useful Resources
+- [CDK intro and concepts](https://docs.aws.amazon.com/cdk/v2/guide/home.html)
+- [CDK API Reference](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-construct-library.html)
+- [CDK Java docs](https://docs.aws.amazon.com/cdk/api/v2/java/index.html)

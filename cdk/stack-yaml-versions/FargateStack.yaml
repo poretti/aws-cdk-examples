@@ -1,0 +1,699 @@
+---
+Resources:
+  HelloWorldServiceLB7C80B268:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes:
+      - Key: deletion_protection.enabled
+        Value: 'false'
+      Scheme: internet-facing
+      SecurityGroups:
+      - Fn::GetAtt:
+        - HelloWorldServiceLBSecurityGroup05C4B30B
+        - GroupId
+      Subnets:
+      - Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1Subnet3C273B99
+      - Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2Subnet95FF715A
+      Tags:
+      - Key: team
+        Value: edward
+      Type: application
+    DependsOn:
+    - EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1DefaultRouteFF4E2178
+    - EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2DefaultRouteB1375520
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/LB/Resource
+  HelloWorldServiceLBSecurityGroup05C4B30B:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Automatically created Security Group for ELB ExampleFargateStackHelloWorldServiceLB58287701
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        Description: Allow from anyone on port 80
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      Tags:
+      - Key: team
+        Value: edward
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/LB/SecurityGroup/Resource
+  HelloWorldServiceLBSecurityGrouptoExampleFargateStackHelloWorldServiceSecurityGroup9AA465B480F0DD49F2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Fn::GetAtt:
+        - HelloWorldServiceLBSecurityGroup05C4B30B
+        - GroupId
+      IpProtocol: tcp
+      Description: Load balancer to target
+      DestinationSecurityGroupId:
+        Fn::GetAtt:
+        - HelloWorldServiceSecurityGroup5F3BD4A7
+        - GroupId
+      FromPort: 80
+      ToPort: 80
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/LB/SecurityGroup/to ExampleFargateStackHelloWorldServiceSecurityGroup9AA465B4:80
+  HelloWorldServiceLBPublicListener22A49231:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - TargetGroupArn:
+          Ref: HelloWorldServiceLBPublicListenerECSGroup63BD356F
+        Type: forward
+      LoadBalancerArn:
+        Ref: HelloWorldServiceLB7C80B268
+      Port: 80
+      Protocol: HTTP
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/LB/PublicListener/Resource
+  HelloWorldServiceLBPublicListenerECSGroup63BD356F:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      Tags:
+      - Key: team
+        Value: edward
+      TargetGroupAttributes:
+      - Key: stickiness.enabled
+        Value: 'false'
+      TargetType: ip
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/LB/PublicListener/ECSGroup/Resource
+  HelloWorldServiceTaskDefTaskRole0AF7155B:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+        Version: '2012-10-17'
+      Path: "/mypath/"
+      Tags:
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/TaskDef/TaskRole/Resource
+  HelloWorldServiceTaskDef17C5487C:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Essential: true
+        Image:
+          Fn::Sub: "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:d94a87759a5ec22be4a9552edff4cc507f5980fbcfe6e678ca8d9825dfebf84a"
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: HelloWorldServiceTaskDefwebLogGroup85B2B7D4
+            awslogs-stream-prefix: HelloWorldService
+            awslogs-region:
+              Ref: AWS::Region
+        Name: web
+        PortMappings:
+        - ContainerPort: 80
+          Protocol: tcp
+      Cpu: '256'
+      ExecutionRoleArn:
+        Fn::GetAtt:
+        - HelloWorldServiceTaskDefExecutionRole19BA93E1
+        - Arn
+      Family: ExampleFargateStackHelloWorldServiceTaskDef9D28D7DE
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      Tags:
+      - Key: team
+        Value: edward
+      TaskRoleArn:
+        Fn::GetAtt:
+        - HelloWorldServiceTaskDefTaskRole0AF7155B
+        - Arn
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/TaskDef/Resource
+  HelloWorldServiceTaskDefwebLogGroup85B2B7D4:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      Tags:
+      - Key: team
+        Value: edward
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/TaskDef/web/LogGroup/Resource
+  HelloWorldServiceTaskDefExecutionRole19BA93E1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+        Version: '2012-10-17'
+      Path: "/mypath/"
+      Tags:
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/TaskDef/ExecutionRole/Resource
+  HelloWorldServiceTaskDefExecutionRoleDefaultPolicyDAAEB0BF:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - ecr:BatchCheckLayerAvailability
+          - ecr:BatchGetImage
+          - ecr:GetDownloadUrlForLayer
+          Effect: Allow
+          Resource:
+            Fn::Join:
+            - ''
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - ":ecr:"
+              - Ref: AWS::Region
+              - ":"
+              - Ref: AWS::AccountId
+              - ":repository/"
+              - Fn::Sub: cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}
+        - Action: ecr:GetAuthorizationToken
+          Effect: Allow
+          Resource: "*"
+        - Action:
+          - logs:CreateLogStream
+          - logs:PutLogEvents
+          Effect: Allow
+          Resource:
+            Fn::GetAtt:
+            - HelloWorldServiceTaskDefwebLogGroup85B2B7D4
+            - Arn
+        Version: '2012-10-17'
+      PolicyName: HelloWorldServiceTaskDefExecutionRoleDefaultPolicyDAAEB0BF
+      Roles:
+      - Ref: HelloWorldServiceTaskDefExecutionRole19BA93E1
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/TaskDef/ExecutionRole/DefaultPolicy/Resource
+  HelloWorldService36ED7EB6:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Ref: EcsDefaultClusterMnL3mNNYN926A5246
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      EnableECSManagedTags: false
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+      - ContainerName: web
+        ContainerPort: 80
+        TargetGroupArn:
+          Ref: HelloWorldServiceLBPublicListenerECSGroup63BD356F
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+          - Fn::GetAtt:
+            - HelloWorldServiceSecurityGroup5F3BD4A7
+            - GroupId
+          Subnets:
+          - Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1Subnet075EFF4C
+          - Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2SubnetE4CEDF73
+      Tags:
+      - Key: team
+        Value: edward
+      TaskDefinition:
+        Ref: HelloWorldServiceTaskDef17C5487C
+    DependsOn:
+    - HelloWorldServiceLBPublicListenerECSGroup63BD356F
+    - HelloWorldServiceLBPublicListener22A49231
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/Service/Service
+  HelloWorldServiceSecurityGroup5F3BD4A7:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ExampleFargateStack/HelloWorldService/Service/SecurityGroup
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        Description: Allow all outbound traffic by default
+        IpProtocol: "-1"
+      Tags:
+      - Key: team
+        Value: edward
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/Service/SecurityGroup/Resource
+  HelloWorldServiceSecurityGroupfromExampleFargateStackHelloWorldServiceLBSecurityGroupF344041880F4BAD8BF:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: Load balancer to target
+      FromPort: 80
+      GroupId:
+        Fn::GetAtt:
+        - HelloWorldServiceSecurityGroup5F3BD4A7
+        - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        - HelloWorldServiceLBSecurityGroup05C4B30B
+        - GroupId
+      ToPort: 80
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/HelloWorldService/Service/SecurityGroup/from
+        ExampleFargateStackHelloWorldServiceLBSecurityGroupF3440418:80
+  EcsDefaultClusterMnL3mNNYN926A5246:
+    Type: AWS::ECS::Cluster
+    Properties:
+      Tags:
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Resource
+  EcsDefaultClusterMnL3mNNYNVpc7788A521:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/Resource
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1Subnet3C273B99:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      CidrBlock: 10.0.0.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: aws-cdk:subnet-name
+        Value: Public
+      - Key: aws-cdk:subnet-type
+        Value: Public
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1/Subnet
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1RouteTableA1FD6ACC:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1/RouteTable
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1RouteTableAssociation8B583A17:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1RouteTableA1FD6ACC
+      SubnetId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1Subnet3C273B99
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1/RouteTableAssociation
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1DefaultRouteFF4E2178:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1RouteTableA1FD6ACC
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcIGW9C2C2B8F
+    DependsOn:
+    - EcsDefaultClusterMnL3mNNYNVpcVPCGW2447264E
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1/DefaultRoute
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1EIP8704DB2F:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1/EIP
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1NATGateway5E3732C1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1Subnet3C273B99
+      AllocationId:
+        Fn::GetAtt:
+        - EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1EIP8704DB2F
+        - AllocationId
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet1/NATGateway
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2Subnet95FF715A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      CidrBlock: 10.0.64.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: aws-cdk:subnet-name
+        Value: Public
+      - Key: aws-cdk:subnet-type
+        Value: Public
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2/Subnet
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2RouteTable263DEAA5:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2/RouteTable
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2RouteTableAssociation43E5803C:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2RouteTable263DEAA5
+      SubnetId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2Subnet95FF715A
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2/RouteTableAssociation
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2DefaultRouteB1375520:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2RouteTable263DEAA5
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcIGW9C2C2B8F
+    DependsOn:
+    - EcsDefaultClusterMnL3mNNYNVpcVPCGW2447264E
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2/DefaultRoute
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2EIPF0764873:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2/EIP
+  EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2NATGateway4C855E00:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2Subnet95FF715A
+      AllocationId:
+        Fn::GetAtt:
+        - EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2EIPF0764873
+        - AllocationId
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PublicSubnet2/NATGateway
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1Subnet075EFF4C:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      CidrBlock: 10.0.128.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: aws-cdk:subnet-name
+        Value: Private
+      - Key: aws-cdk:subnet-type
+        Value: Private
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet1
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet1/Subnet
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1RouteTable4F1D2E36:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet1
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet1/RouteTable
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1RouteTableAssociation34B92275:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1RouteTable4F1D2E36
+      SubnetId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1Subnet075EFF4C
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet1/RouteTableAssociation
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1DefaultRouteA5ADF694:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet1RouteTable4F1D2E36
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet1NATGateway5E3732C1
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet1/DefaultRoute
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2SubnetE4CEDF73:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      CidrBlock: 10.0.192.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: aws-cdk:subnet-name
+        Value: Private
+      - Key: aws-cdk:subnet-type
+        Value: Private
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet2
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet2/Subnet
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2RouteTableDCE46591:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet2
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet2/RouteTable
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2RouteTableAssociation111C622F:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2RouteTableDCE46591
+      SubnetId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2SubnetE4CEDF73
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet2/RouteTableAssociation
+  EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2DefaultRoute20CE2D89:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPrivateSubnet2RouteTableDCE46591
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcPublicSubnet2NATGateway4C855E00
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/PrivateSubnet2/DefaultRoute
+  EcsDefaultClusterMnL3mNNYNVpcIGW9C2C2B8F:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc
+      - Key: team
+        Value: edward
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/IGW
+  EcsDefaultClusterMnL3mNNYNVpcVPCGW2447264E:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpc7788A521
+      InternetGatewayId:
+        Ref: EcsDefaultClusterMnL3mNNYNVpcIGW9C2C2B8F
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/EcsDefaultClusterMnL3mNNYN/Vpc/VPCGW
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/31STW/bMAz9Lbsr2pJLz+nHihTFZjhBrwGtsB4XRzJEKkVg+L9Pkh3Xa4ed+Pj0JJF8XOnVUi+/wBsvzOG4aKjS3VbAHFWk9h0a3rcggt6yXrdtQwaEnH12cLiFBqzBw3fwNQhu0Z/JoMIGWMg0UVFlBdn6vNLdv297dff6dz7XEQvaUXPFs/Nd/Bnl0bvQJsks7RWa+OcWTfAkl0nyf+Kh9sj8id7YgX9pTTp7Ke5UEapYxDZUFiXrJ1S6ILiDqsF3/p1bMztDufhJnMDDpkjhB8hjHOUbXFTh6ZymOj28sckFnARDJWO2lujZrxNaSZ2z7kZTdsDHe3wlS9cvPzLOClCc64z7YGgexwibEF3IfoywVwQn3ZVu6DfHwsXZ5AIHlErye2BGYX3vzBH95gR1GkZsLZ7pElvHJM5fboFRNa6OLTy7erLpivs+ZT+DtEFUvh+XtY4bpkpkF/xQ7hzHBg+5rV49wRm+Lm/0t7jwv5lo4YMVOqEuh/gHyRYkbAwDAAA=
+    Metadata:
+      aws:cdk:path: ExampleFargateStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Outputs:
+  HelloWorldServiceLoadBalancerDNS55FD1E3C:
+    Value:
+      Fn::GetAtt:
+      - HelloWorldServiceLB7C80B268
+      - DNSName
+  HelloWorldServiceServiceURL51B6A3C0:
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - HelloWorldServiceLB7C80B268
+          - DNSName
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+    - Fn::Or:
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - af-south-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ap-east-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ap-northeast-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ap-northeast-2
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ap-south-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ap-southeast-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ap-southeast-2
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - ca-central-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - cn-north-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - cn-northwest-1
+    - Fn::Or:
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - eu-central-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - eu-north-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - eu-south-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - eu-west-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - eu-west-2
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - eu-west-3
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - me-south-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - sa-east-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - us-east-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - us-east-2
+    - Fn::Or:
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - us-west-1
+      - Fn::Equals:
+        - Ref: AWS::Region
+        - us-west-2
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/cdk-bootstrap/hnb659fds/version"
+    Description: Version of the CDK Bootstrap resources in this environment, automatically
+      retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Contains:
+          - - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+          - Ref: BootstrapVersion
+      AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap'
+        with a recent version of the CDK CLI.
