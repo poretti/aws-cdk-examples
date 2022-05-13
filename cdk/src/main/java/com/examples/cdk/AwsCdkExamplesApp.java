@@ -1,5 +1,6 @@
 package com.examples.cdk;
 
+import com.examples.cdk.StepFunctionsStack.Props;
 import com.examples.cdk.aspects.IamRolePathAspect;
 
 import software.amazon.awscdk.App;
@@ -39,10 +40,13 @@ public class AwsCdkExamplesApp {
         Aspects.of(fargateStack).add(IamRolePathAspect.path("mypath"));
 
 
-        // All together now, let's go full fancy mode
-        // TODO step function example
+        // EXAMPLE 4 - Full Fancy Mode
+        StorageStack storage = new StorageStack(app, "ExampleStorageStack");
+        new StepFunctionsStack(app, "ExampleStepFunctionsStack", Props.builder()
+            .storageStack(storage)
+            .build());
 
-        
+            
         app.synth();
     }
 }
